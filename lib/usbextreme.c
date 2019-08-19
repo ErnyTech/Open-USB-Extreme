@@ -1,22 +1,6 @@
 #include <usbextreme.h>
 #include <string.h>
 
-int is_oue(const void *headers, const size_t headerslen) {
-    const usb_extreme_base *headers_oeu = headers;
-    int headers_nlen = (int) (headerslen / USBEXTREME_HEADER_SIZE);
-    int i;
-
-    for(i = 0; i < headers_nlen; i++) {
-        const usb_extreme_base header = headers_oeu[i];
-
-        if (header.magic != USBEXTREME_MAGIC) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
 usb_extreme_versions get_version(u8 version) {
     switch (version) {
         case 0: {
