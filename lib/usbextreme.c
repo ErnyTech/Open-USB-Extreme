@@ -12,17 +12,6 @@ int oue_point_headers(usb_extreme_base **headers, void *raw_headers, size_t head
     return headers_nlen;
 }
 
-int oue_num_headers(int *num_headers, const void *headers, size_t headerslen) {
-    int headers_nlen = (int) (headerslen / USBEXTREME_HEADER_SIZE);
-
-    if (!is_oue(headers, headerslen)) {
-        return -1;
-    }
-
-    *num_headers = headers_nlen;
-    return headers_nlen;
-}
-
 int oue_version(usb_extreme_versions *version, const void *headers, size_t headerslen) {
     const usb_extreme_v1 *headers_oeu = headers;
     int headers_nlen = (int) (headerslen / USBEXTREME_HEADER_SIZE);

@@ -48,3 +48,14 @@ extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
         }
     }
 }
+
+extern(C) int oue_num_headers(int *num_headers, immutable(void) *headers, size_t headerslen) {
+    auto headers_nlen = cast(int) (headerslen / USBEXTREME_HEADER_SIZE);
+
+    if (!is_oue(headers, headerslen)) {
+        return -1;
+    }
+
+    *num_headers = headers_nlen;
+    return headers_nlen;
+}
