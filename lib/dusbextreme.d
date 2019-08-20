@@ -18,12 +18,12 @@ enum UsbExtremeVersion  {
     V1
 }
 
-extern(C) int is_oue(immutable(void)* headers, immutable(size_t) headerslen) {
+extern(C) int is_oue(immutable(void)* headers, size_t headerslen) {
     immutable headers_oeu = cast(immutable usb_extreme_base*) headers;
-    immutable headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
+    auto headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
     
     for (auto i = 0; i < headers_nlen; i++) {
-        immutable header = headers_oeu[i];
+        auto header = headers_oeu[i];
         
         if (header.magic != USBEXTREME_MAGIC) {
             return 0;
