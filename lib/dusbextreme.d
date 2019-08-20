@@ -13,6 +13,28 @@ struct usb_extreme_base {
     uint8_t[10] empty2;
 }
 
+struct usb_extreme_v0 {
+    char[USBEXTREME_NAME_LENGTH] name;
+    char[USBEXTREME_ID_LENGTH] id;
+    uint8_t n_parts;
+    uint8_t type;
+    uint8_t[4] empty;
+    uint8_t magic;
+    uint8_t[USBEXTREME_NAME_EXT_LENGTH] empty2;
+}
+
+struct usb_extreme_v1 {
+    char[USBEXTREME_NAME_LENGTH] name;
+    char[USBEXTREME_ID_LENGTH] id;
+    uint8_t n_parts;
+    uint8_t type;
+    uint16_t size;
+    uint8_t video_mode;
+    uint8_t usb_extreme_version;
+    uint8_t magic;
+    char[USBEXTREME_NAME_EXT_LENGTH] name_ext;
+}
+
 enum UsbExtremeVersion  {
     V0 = 0x00,
     V1
@@ -69,4 +91,31 @@ extern(C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* 
 
     *headers = cast(const(usb_extreme_base)*) raw_headers;
     return headers_nlen;
+}
+
+extern(C) int oue_version(UsbExtremeVersion* oueVersion, const(void) *headers, size_t headerslen) {
+    auto headers_oeu = cast(usb_extreme_v1*) headers;
+    auto headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
+    auto first_version = UsbExtremeVersion.V0;
+    int i;
+
+    if(!is_oue(headers, headerslen)) {
+        return -1;
+    }
+
+    for(i = 0; i < headers_nlen; i++) {
+        auto header = headers_oeu[i];
+
+        if (i == 0) {
+            first_version = get_version(header.usb_extreme_version);
+        } else {
+            if (first_version != get_version(header.usb_extreme_version)) {
+                *oueVersion = UsbExtremeVersion.V0;
+                return -2;
+            }
+        }
+    }
+
+    *oueVersion = first_version;
+    return 1;
 }
