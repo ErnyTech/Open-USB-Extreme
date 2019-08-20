@@ -1,22 +1,6 @@
 #include <usbextreme.h>
 #include <string.h>
 
-usb_extreme_versions get_version(u8 version) {
-    switch (version) {
-        case 0: {
-            return  USB_EXTREME_V0;
-        }
-
-        case 1: {
-            return USB_EXTREME_V1;
-        }
-
-        default: {
-            return USB_EXTREME_V1;
-        }
-    }
-}
-
 int oue_point_headers(usb_extreme_base **headers, void *raw_headers, size_t headerslen) {
     int headers_nlen;
 

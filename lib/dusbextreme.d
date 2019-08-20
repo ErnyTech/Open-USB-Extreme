@@ -13,6 +13,11 @@ struct usb_extreme_base {
     uint8_t[10] empty2;
 }
 
+enum UsbExtremeVersion  {
+    V0 = 0x00,
+    V1
+}
+
 extern(C) int is_oue(immutable(void)* headers, immutable(size_t) headerslen) {
     immutable headers_oeu = cast(immutable usb_extreme_base*) headers;
     immutable headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
@@ -26,4 +31,20 @@ extern(C) int is_oue(immutable(void)* headers, immutable(size_t) headerslen) {
     }
     
     return 1;
+}
+
+extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
+    switch (usbExtremeVersion) {
+        case 0: {
+            return UsbExtremeVersion.V0;
+        }
+
+        case 1: {
+            return UsbExtremeVersion.V1;
+        }
+
+        default: {
+            return UsbExtremeVersion.V1;
+        }
+    }
 }
