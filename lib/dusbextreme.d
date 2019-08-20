@@ -18,8 +18,8 @@ enum UsbExtremeVersion  {
     V1
 }
 
-extern(C) int is_oue(immutable(void)* headers, size_t headerslen) {
-    immutable headers_oeu = cast(immutable usb_extreme_base*) headers;
+extern(C) int is_oue(const(void)* headers, size_t headerslen) {
+    const headers_oeu = cast(const usb_extreme_base*) headers;
     auto headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
     
     for (auto i = 0; i < headers_nlen; i++) {
@@ -49,7 +49,7 @@ extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
     }
 }
 
-extern(C) int oue_num_headers(int *num_headers, immutable(void) *headers, size_t headerslen) {
+extern(C) int oue_num_headers(int *num_headers, const(void) *headers, size_t headerslen) {
     auto headers_nlen = cast(int) (headerslen / USBEXTREME_HEADER_SIZE);
 
     if (!is_oue(headers, headerslen)) {
@@ -57,5 +57,16 @@ extern(C) int oue_num_headers(int *num_headers, immutable(void) *headers, size_t
     }
 
     *num_headers = headers_nlen;
+    return headers_nlen;
+}
+
+extern(C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* raw_headers, size_t headerslen) {
+    int headers_nlen;
+
+    if (oue_num_headers(&headers_nlen, raw_headers, headerslen) <= 0) {
+        return -1;
+    }
+
+    *headers = cast(const(usb_extreme_base)*) raw_headers;
     return headers_nlen;
 }

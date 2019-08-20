@@ -1,17 +1,6 @@
 #include <usbextreme.h>
 #include <string.h>
 
-int oue_point_headers(usb_extreme_base **headers, void *raw_headers, size_t headerslen) {
-    int headers_nlen;
-
-    if (oue_num_headers(&headers_nlen, raw_headers, headerslen) <= 0) {
-        return -1;
-    }
-
-    *headers = raw_headers;
-    return headers_nlen;
-}
-
 int oue_version(usb_extreme_versions *version, const void *headers, size_t headerslen) {
     const usb_extreme_v1 *headers_oeu = headers;
     int headers_nlen = (int) (headerslen / USBEXTREME_HEADER_SIZE);
