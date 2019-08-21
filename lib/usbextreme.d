@@ -1,4 +1,4 @@
-module dusbextreme;
+module usbextreme;
 import std.stdint;
 
 enum USBEXTREME_NAME_LENGTH = 32;
@@ -38,7 +38,7 @@ align(1) struct usb_extreme_v1 {
     char[USBEXTREME_NAME_EXT_LENGTH] name_ext;
 }
 
-struct usb_extreme_headers{
+struct usb_extreme_headers {
     const(void)* first_header;
     const(usb_extreme_base)* headers;
     int num_headers;
@@ -46,9 +46,38 @@ struct usb_extreme_headers{
     UsbExtremeVersion oueVersion;
 }
 
-enum UsbExtremeVersion  {
+struct usb_extreme_filestat {
+    int offset;
+    char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
+    SCECdvdMediaType type;
+    uint16_t size;
+    uint8_t video_mode;
+    UsbExtremeVersion usb_extreme_version;
+}
+
+enum UsbExtremeVersion {
     V0 = 0x00,
     V1
+}
+
+enum SCECdvdMediaType {
+    SCECdGDTFUNCFAIL	= -1,
+    SCECdNODISC		= 0x00,
+    SCECdDETCT,
+    SCECdDETCTCD,
+    SCECdDETCTDVDS,
+    SCECdDETCTDVDD,
+    SCECdUNKNOWN,
+
+    SCECdPSCD		= 0x10,
+    SCECdPSCDDA,
+    SCECdPS2CD,
+    SCECdPS2CDDA,
+    SCECdPS2DVD,
+
+    SCECdCDDA		= 0xFD,
+    SCECdDVDV,
+    SCECdIllegalMediaoffset
 }
 
 extern(C) int is_oue(const(void)* headers, size_t headerslen) {
@@ -152,4 +181,43 @@ extern(C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_he
     headers_temp.oueVersion = oueVersion;
     *headers = headers_temp;
     return 1;
+}
+
+extern(C) int oue_read(usb_extreme_filestat* filestat, const(usb_extreme_headers) headers, int filestats_nlen) {
+    import core.stdc.string : strncpy, strncat;
+    
+    int offset = filestats_nlen;
+    auto headers_full = cast(usb_extreme_v1*) headers.headers;
+    usb_extreme_v1 header;
+    usb_extreme_filestat filestats_temp = {0, ['0'], SCECdvdMediaType.SCECdNODISC, 0, 0, UsbExtremeVersion.V0};
+    uint16_t size = 0;
+    uint8_t video_mode = 0;
+    uint8_t usb_extreme_version;
+    int i;
+
+    for(i = 0; i < headers.num_headers; i++) {
+        if(offset == 0) {
+            return i;
+        }
+
+        header = headers_full[i];
+        strncpy(filestats_temp.name.ptr, header.name.ptr, USBEXTREME_NAME_LENGTH);
+        usb_extreme_version = header.usb_extreme_version;
+
+        if(usb_extreme_version >= 1) {
+            size = header.size;
+            video_mode = header.video_mode;
+            strncat(filestats_temp.name.ptr, header.name_ext.ptr, USBEXTREME_NAME_EXT_LENGTH);
+        }
+
+        filestats_temp.size = size;
+        filestats_temp.type = cast(SCECdvdMediaType) header.type;
+        filestats_temp.offset = i;
+        filestats_temp.video_mode = video_mode;
+        filestats_temp.usb_extreme_version = cast(UsbExtremeVersion) usb_extreme_version;
+        filestat[i] = filestats_temp;
+        offset -= 1;
+    }
+
+    return i;
 }

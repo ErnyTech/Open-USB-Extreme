@@ -1,5 +1,5 @@
-// D import file generated from 'dusbextreme.d'
-module dusbextreme;
+// D import file generated from 'usbextreme.d'
+module usbextreme;
 import std.stdint;
 enum USBEXTREME_NAME_LENGTH = 32;
 enum USBEXTREME_ID_LENGTH = 15;
@@ -43,13 +43,50 @@ align (1) struct usb_extreme_v1
 		char[USBEXTREME_NAME_EXT_LENGTH] name_ext;
 	}
 }
+struct usb_extreme_headers
+{
+	const(void)* first_header;
+	const(usb_extreme_base)* headers;
+	int num_headers;
+	size_t headerslen;
+	UsbExtremeVersion oueVersion;
+}
+struct usb_extreme_filestat
+{
+	int offset;
+	char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
+	SCECdvdMediaType type;
+	uint16_t size;
+	uint8_t video_mode;
+	UsbExtremeVersion usb_extreme_version;
+}
 enum UsbExtremeVersion 
 {
 	V0 = 0,
 	V1,
+}
+enum SCECdvdMediaType 
+{
+	SCECdGDTFUNCFAIL = -1,
+	SCECdNODISC = 0,
+	SCECdDETCT,
+	SCECdDETCTCD,
+	SCECdDETCTDVDS,
+	SCECdDETCTDVDD,
+	SCECdUNKNOWN,
+	SCECdPSCD = 16,
+	SCECdPSCDDA,
+	SCECdPS2CD,
+	SCECdPS2CDDA,
+	SCECdPS2DVD,
+	SCECdCDDA = 253,
+	SCECdDVDV,
+	SCECdIllegalMediaoffset,
 }
 extern (C) int is_oue(const(void)* headers, size_t headerslen);
 extern (C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion);
 extern (C) int oue_num_headers(int* num_headers, const(void)* headers, size_t headerslen);
 extern (C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* raw_headers, size_t headerslen);
 extern (C) int oue_version(UsbExtremeVersion* oueVersion, const(void)* headers, size_t headerslen);
+extern (C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_headers, size_t headerslen);
+extern (C) int oue_read(usb_extreme_filestat* filestat, const(usb_extreme_headers) headers, int filestats_nlen);
