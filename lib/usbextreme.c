@@ -1,29 +1,6 @@
 #include <usbextreme.h>
 #include <string.h>
 
-int oue_read_headers(usb_extreme_headers *headers, void *raw_headers, const size_t headerslen) {
-    usb_extreme_base *headers_ptr;
-    usb_extreme_versions version;
-    int num_headers = (int) (headerslen / USBEXTREME_HEADER_SIZE);
-    usb_extreme_headers headers_temp = {NULL, NULL, 0, 0, 0};
-
-    if(oue_point_headers(&headers_ptr, raw_headers, headerslen) <= 0) {
-            return -1;
-    }
-
-    if(oue_version(&version, raw_headers, headerslen) <= 0) {
-        return -1;
-    }
-
-    headers_temp.first_header = raw_headers;
-    headers_temp.headers = headers_ptr;
-    headers_temp.num_headers = num_headers;
-    headers_temp.headerslen = headerslen;
-    headers_temp.version = version;
-    *headers = headers_temp;
-    return 1;
-}
-
 int oue_read(usb_extreme_filestat *filestat, const usb_extreme_headers headers, const int filestats_nlen) {
     int offset = filestats_nlen;
     usb_extreme_v1 *headers_full = (usb_extreme_v1*) headers.headers;

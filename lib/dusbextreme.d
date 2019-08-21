@@ -38,6 +38,14 @@ align(1) struct usb_extreme_v1 {
     char[USBEXTREME_NAME_EXT_LENGTH] name_ext;
 }
 
+struct usb_extreme_headers{
+    const(void)* first_header;
+    const(usb_extreme_base)* headers;
+    int num_headers;
+    size_t headerslen;
+    UsbExtremeVersion oueVersion;
+}
+
 enum UsbExtremeVersion  {
     V0 = 0x00,
     V1
@@ -120,5 +128,28 @@ extern(C) int oue_version(UsbExtremeVersion* oueVersion, const(void) *headers, s
     }
 
     *oueVersion = first_version;
+    return 1;
+}
+
+extern(C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_headers, size_t headerslen) {
+    const(usb_extreme_base)* headers_ptr;
+    UsbExtremeVersion oueVersion;
+    auto num_headers = cast(int) (headerslen / USBEXTREME_HEADER_SIZE);
+    usb_extreme_headers headers_temp = {null, null, 0, 0, UsbExtremeVersion.V0};
+
+    if (oue_point_headers(&headers_ptr, raw_headers, headerslen) <= 0) {
+            return -1;
+    }
+
+    if (oue_version(&oueVersion, raw_headers, headerslen) <= 0) {
+        return -1;
+    }
+
+    headers_temp.first_header = raw_headers;
+    headers_temp.headers = headers_ptr;
+    headers_temp.num_headers = num_headers;
+    headers_temp.headerslen = headerslen;
+    headers_temp.oueVersion = oueVersion;
+    *headers = headers_temp;
     return 1;
 }
