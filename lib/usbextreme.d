@@ -80,7 +80,7 @@ enum SCECdvdMediaType {
     SCECdIllegalMediaoffset
 }
 
-extern(C) int is_oue(const(void)* headers, size_t headerslen) {
+extern(C) int isOue(const(void)* headers, size_t headerslen) {
     const headers_oeu = cast(const usb_extreme_base*) headers;
     auto headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
     
@@ -95,7 +95,7 @@ extern(C) int is_oue(const(void)* headers, size_t headerslen) {
     return 1;
 }
 
-extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
+extern(D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion) {
     switch (usbExtremeVersion) {
         case 0: {
             return UsbExtremeVersion.V0;
@@ -111,35 +111,35 @@ extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
     }
 }
 
-extern(C) int oue_num_headers(int *num_headers, const(void) *headers, size_t headerslen) {
+extern(D) int oueNumHeaders(ref int num_headers, const(void) *headers, size_t headerslen) {
     auto headers_nlen = cast(int) (headerslen / USBEXTREME_HEADER_SIZE);
 
-    if (!is_oue(headers, headerslen)) {
+    if (!isOue(headers, headerslen)) {
         return -1;
     }
 
-    *num_headers = headers_nlen;
+    num_headers = headers_nlen;
     return headers_nlen;
 }
 
-extern(C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* raw_headers, size_t headerslen) {
+extern(D) int ouePointHeaders(ref const(usb_extreme_base)* headers, const(void)* raw_headers, size_t headerslen) {
     int headers_nlen;
 
-    if (oue_num_headers(&headers_nlen, raw_headers, headerslen) <= 0) {
+    if (oueNumHeaders(headers_nlen, raw_headers, headerslen) <= 0) {
         return -1;
     }
 
-    *headers = cast(const(usb_extreme_base)*) raw_headers;
+    headers = cast(const(usb_extreme_base)*) raw_headers;
     return headers_nlen;
 }
 
-extern(C) int oue_version(UsbExtremeVersion* oueVersion, const(void) *headers, size_t headerslen) {
+extern(D) int oueHeadersVersion(ref UsbExtremeVersion oueVersion, const(void) *headers, size_t headerslen) {
     auto headers_oeu = cast(usb_extreme_v1*) headers;
     auto headers_nlen = headerslen / USBEXTREME_HEADER_SIZE;
     auto first_version = UsbExtremeVersion.V0;
     int i;
 
-    if(!is_oue(headers, headerslen)) {
+    if(!isOue(headers, headerslen)) {
         return -1;
     }
 
@@ -147,30 +147,30 @@ extern(C) int oue_version(UsbExtremeVersion* oueVersion, const(void) *headers, s
         auto header = headers_oeu[i];
 
         if (i == 0) {
-            first_version = get_version(header.usb_extreme_version);
+            first_version = getVersion(header.usb_extreme_version);
         } else {
-            if (first_version != get_version(header.usb_extreme_version)) {
-                *oueVersion = UsbExtremeVersion.V0;
+            if (first_version != getVersion(header.usb_extreme_version)) {
+                oueVersion = UsbExtremeVersion.V0;
                 return -2;
             }
         }
     }
 
-    *oueVersion = first_version;
+    oueVersion = first_version;
     return 1;
 }
 
-extern(C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_headers, size_t headerslen) {
+extern(D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)* raw_headers, size_t headerslen) {
     const(usb_extreme_base)* headers_ptr;
     UsbExtremeVersion oueVersion;
     auto num_headers = cast(int) (headerslen / USBEXTREME_HEADER_SIZE);
     usb_extreme_headers headers_temp = {null, null, 0, 0, UsbExtremeVersion.V0};
 
-    if (oue_point_headers(&headers_ptr, raw_headers, headerslen) <= 0) {
+    if (ouePointHeaders(headers_ptr, raw_headers, headerslen) <= 0) {
             return -1;
     }
 
-    if (oue_version(&oueVersion, raw_headers, headerslen) <= 0) {
+    if (oueHeadersVersion(oueVersion, raw_headers, headerslen) <= 0) {
         return -1;
     }
 
@@ -179,14 +179,14 @@ extern(C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_he
     headers_temp.num_headers = num_headers;
     headers_temp.headerslen = headerslen;
     headers_temp.oueVersion = oueVersion;
-    *headers = headers_temp;
+    headers = headers_temp;
     return 1;
 }
 
-extern(C) int oue_read(usb_extreme_filestat* filestat, const(usb_extreme_headers) headers, int filestats_nlen) {
+extern(D) int oueRead(usb_extreme_filestat[] filestat, const(usb_extreme_headers) headers) {
     import core.stdc.string : strncpy, strncat;
     
-    int offset = filestats_nlen;
+    int offset = cast(int) filestat.length;
     auto headers_full = cast(usb_extreme_v1*) headers.headers;
     usb_extreme_v1 header;
     usb_extreme_filestat filestats_temp = {0, ['0'], SCECdvdMediaType.SCECdNODISC, 0, 0, UsbExtremeVersion.V0};

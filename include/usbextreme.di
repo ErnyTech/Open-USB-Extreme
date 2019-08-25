@@ -83,10 +83,10 @@ enum SCECdvdMediaType
 	SCECdDVDV,
 	SCECdIllegalMediaoffset,
 }
-extern (C) int is_oue(const(void)* headers, size_t headerslen);
-extern (C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion);
-extern (C) int oue_num_headers(int* num_headers, const(void)* headers, size_t headerslen);
-extern (C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* raw_headers, size_t headerslen);
-extern (C) int oue_version(UsbExtremeVersion* oueVersion, const(void)* headers, size_t headerslen);
-extern (C) int oue_read_headers(usb_extreme_headers* headers, const(void)* raw_headers, size_t headerslen);
-extern (C) int oue_read(usb_extreme_filestat* filestat, const(usb_extreme_headers) headers, int filestats_nlen);
+extern (C) int isOue(const(void)* headers, size_t headerslen);
+extern (D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion);
+extern (D) int oueNumHeaders(ref int num_headers, const(void)* headers, size_t headerslen);
+extern (D) int ouePointHeaders(ref const(usb_extreme_base)* headers, const(void)* raw_headers, size_t headerslen);
+extern (D) int oueHeadersVersion(ref UsbExtremeVersion oueVersion, const(void)* headers, size_t headerslen);
+extern (D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)* raw_headers, size_t headerslen);
+extern (D) int oueRead(usb_extreme_filestat[] filestat, const(usb_extreme_headers) headers);
