@@ -8,7 +8,13 @@ extern(C) int main(int argc, char[]* argv) {
         return 1;
     }
     
-    auto f = fopen(argv[1].ptr, "rb");
+    auto f = fopen(argv[0].ptr, "rb");
+    
+    if (!f) {
+        printf("Open error with file: %s\n", argv[0].ptr);
+        return 1;
+    }
+    
     fseek(f, 0, SEEK_END);
     auto fsize = ftell(f);
     
@@ -25,12 +31,12 @@ extern(C) int main(int argc, char[]* argv) {
 
     usb_extreme_headers headers;
 
-    if (oue_read_headers(&headers, data, size) <= 0) {
+    if (oueReadHeaders(headers, data, size) <= 0) {
        return 1;
     }
 
     usb_extreme_filestat[10] filestats = void;
-    int nstats = oue_read(filestats.ptr, headers, 10);
+    int nstats = oueRead(filestats, headers);
 
     int i;
     for(i = 0; i < nstats; i++) {
