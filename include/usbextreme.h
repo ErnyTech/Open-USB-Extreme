@@ -2,21 +2,13 @@
 #define USBEXTREME_H
 
 #ifndef u8
-    #if HAVE_STDINT
-        #include <stdint.h>
-        typedef uint8_t u8;
-        typedef uint16_t u16;
-    #else
-        #error "u8 and u16 types have not been defined and missing stdint.h, please define your implementation of u8 and u16"
-    #endif
+   #include <stdint.h>
+   typedef uint8_t u8;
+   typedef uint16_t u16;
 #endif
 
 #ifndef size_t
-    #if HAVE_STDDEF
-        #include <stddef.h>
-    #else
-        #error "size_t type has not been defined and missing stddef.h, please define your implementation of size_t"
-    #endif
+   #include <stddef.h>
 #endif
 
 #define USBEXTREME_NAME_LENGTH 32
