@@ -31,7 +31,7 @@ extern(C) int main(int argc, char[]* argv) {
 
     usb_extreme_headers headers;
 
-    if (oueReadHeaders(headers, data, size) <= 0) {
+    if (oueReadHeaders(headers, data[0..size]) <= 0) {
        return 1;
     }
 
