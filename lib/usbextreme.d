@@ -119,16 +119,14 @@ extern(D) int oueNumHeaders(ref int num_headers, const(void)[] headers) {
     return headers_nlen;
 }
 
-extern(D) int ouePointHeaders(ref const(usb_extreme_base)* headers, const(void)[] raw_headers) {
-    import core.stdc.stdio;
+extern(D) int ouePointHeaders(ref const(usb_extreme_base)[] headers, const(void)[] raw_headers) {
     int headers_nlen;
 
     if (oueNumHeaders(headers_nlen, raw_headers) <= 0) {
         return -1;
     }
 
-    auto headersArr = castArray!(const(usb_extreme_base))(raw_headers)[];
-    headers = headersArr.ptr;
+    headers = castArray!(const(usb_extreme_base))(raw_headers)[];
     return headers_nlen;
 }
 
@@ -218,5 +216,5 @@ extern(D) int oueRead(usb_extreme_filestat[] filestat, const(usb_extreme_headers
 private R[] castArray(R, T) (T[] array) { // Workaround for https://issues.dlang.org/show_bug.cgi?id=20088
     auto ptr = array.ptr;
     auto castPtr = cast(R*) ptr;
-    return castPtr[0..(array.length / R.sizeof)];
+    return castPtr[0..((array.length * T.sizeof) / R.sizeof)];
 }

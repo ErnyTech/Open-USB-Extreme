@@ -15,7 +15,9 @@ extern(C) int oue_num_headers(int *num_headers, const(void) *headers, size_t hea
 }
 
 extern(C) int oue_point_headers(const(usb_extreme_base)** headers, const(void)* raw_headers, size_t headerslen) {
-    return ouePointHeaders(*headers, raw_headers[0..headerslen]);
+    auto len = headerslen / usb_extreme_base.sizeof;
+    const(usb_extreme_base)[] headersArr = (*headers)[0..len];
+    return ouePointHeaders(headersArr, raw_headers[0..headerslen]);
 }
 
 extern(C) int oue_version(UsbExtremeVersion* oueVersion, const(void) *headers, size_t headerslen) {
