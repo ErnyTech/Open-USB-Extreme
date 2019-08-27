@@ -38,7 +38,8 @@ typedef enum {
 
 typedef enum {
     USB_EXTREME_V0 = 0x00,
-    USB_EXTREME_V1
+    USB_EXTREME_V1,
+    USB_EXTREME_UNKNOWN
 } usb_extreme_versions;
 
 typedef struct __attribute__((__packed__)) {

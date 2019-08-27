@@ -3,6 +3,9 @@ import core.stdc.stdlib;
 import usbextreme;
 
 extern(C) int main(int argc, char[]* argv) {
+    usb_extreme_headers headers;
+    usb_extreme_filestat[10] filestatsBuf = void;
+
     if (argc < 2) {
         printf("Usage: open-usbextreme-example <path/to/ul.cfg>\n");
         return 1;
@@ -29,18 +32,14 @@ extern(C) int main(int argc, char[]* argv) {
     fread(data, size, 1, f);
     fclose(f);
 
-    usb_extreme_headers headers;
-
     if (oueReadHeaders(headers, data[0..size]) <= 0) {
        return 1;
     }
+    
+    auto filestats = oueRead(filestatsBuf, headers);
 
-    usb_extreme_filestat[10] filestats = void;
-    int nstats = oueRead(filestats, headers);
-
-    int i;
-    for(i = 0; i < nstats; i++) {
-        printf("Game name [%d]: %s\n", filestats[i].offset, filestats[i].name.ptr);
+    foreach (filestat; filestats) {
+        printf("Game name [%d]: %s\n", filestat.offset, filestat.name.ptr);
     }
     
     return 0;

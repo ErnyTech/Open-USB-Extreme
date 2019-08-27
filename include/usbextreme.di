@@ -64,6 +64,7 @@ enum UsbExtremeVersion
 {
 	V0 = 0,
 	V1,
+	Unknown,
 }
 enum SCECdvdMediaType 
 {
@@ -83,16 +84,16 @@ enum SCECdvdMediaType
 	SCECdDVDV,
 	SCECdIllegalMediaoffset,
 }
-extern (D) int isOue(const(void)[] headers);
+extern (D) bool isOue(const(void)[] headers);
 extern (D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion);
-extern (D) int oueNumHeaders(ref int num_headers, const(void)[] headers);
+extern (D) int oueNumHeaders(const(void)[] headers);
 extern (D) int ouePointHeaders(ref const(usb_extreme_base)[] headers, const(void)[] raw_headers);
-extern (D) int oueHeadersVersion(ref UsbExtremeVersion oueVersion, const(void)[] headers);
+extern (D) UsbExtremeVersion oueHeadersVersion(const(void)[] headers);
 extern (D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)[] raw_headers);
-extern (D) int oueRead(usb_extreme_filestat[] filestat, const(usb_extreme_headers) headers);
+extern (D) usb_extreme_filestat[] oueRead(usb_extreme_filestat[] filestats, const(usb_extreme_headers) headers);
 private R[] castArray(R, T)(T[] array)
 {
 	auto ptr = array.ptr;
 	auto castPtr = cast(R*)ptr;
-	return castPtr[0..array.length / R.sizeof];
+	return castPtr[0..array.length * T.sizeof / R.sizeof];
 }
