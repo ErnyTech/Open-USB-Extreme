@@ -40,7 +40,7 @@ align(1) struct usb_extreme_v1 {
 
 struct usb_extreme_headers {
     const(void)* first_header;
-    const(usb_extreme_base)* headers;
+    const(usb_extreme_base)[] headers;
     int num_headers;
     size_t headerslen;
     UsbExtremeVersion oueVersion;
@@ -165,7 +165,7 @@ extern(D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)[] raw_
     
     auto headersArr = castArray!(usb_extreme_base)(raw_headers);
     headers = usb_extreme_headers(raw_headers.ptr,
-            headersArr.ptr,
+            headersArr,
             num_headers,
             raw_headers.length,
             oueVersion);
@@ -173,7 +173,7 @@ extern(D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)[] raw_
 }
 
 extern(D) usb_extreme_filestat[] oueRead(usb_extreme_filestat[] filestats, const(usb_extreme_headers) headers) {   
-    auto headers_full = castArray!(usb_extreme_v1)(headers.headers[0..headers.num_headers]);
+    auto headers_full = castArray!(usb_extreme_v1)(headers.headers);
     auto headersLength = headers_full.length;
     int fileStatsLength = 0;
     

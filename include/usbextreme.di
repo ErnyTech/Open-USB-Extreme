@@ -1,4 +1,4 @@
-// D import file generated from 'usbextreme.d'
+// D import file generated from '/home/erny/Open-USB-Extreme/lib/usbextreme.d'
 module usbextreme;
 import std.stdint;
 enum USBEXTREME_NAME_LENGTH = 32;
@@ -46,7 +46,7 @@ align (1) struct usb_extreme_v1
 struct usb_extreme_headers
 {
 	const(void)* first_header;
-	const(usb_extreme_base)* headers;
+	const(usb_extreme_base)[] headers;
 	int num_headers;
 	size_t headerslen;
 	UsbExtremeVersion oueVersion;
