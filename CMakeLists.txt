@@ -5,12 +5,17 @@ project(Open-USB-Extreme C D)
 enable_testing()
 
 file(GLOB SOURCES "lib/*.d")
+file(GLOB PUB_SOURCES
+        "lib/usbextreme.d"
+)
+
 file(GLOB HEADERS "include/*.h" "include/*.di")
 file(GLOB EXAMPLE_SOURCES "examples/*.d")
 
 include_directories(include)
 
 set(CMAKE_D_FLAGS "${CMAKE_D_FLAGS} -betterC -O -release -L-rpath=.")
+set_property(SOURCE ${PUB_SOURCES} PROPERTY COMPILE_FLAGS "-Hd=${CMAKE_SOURCE_DIR}/include")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 add_executable(open-usbextreme-example ${EXAMPLE_SOURCES})
@@ -18,7 +23,7 @@ target_link_libraries(open-usbextreme-example ${PROJECT_NAME})
 
 add_executable(cabitest "tests/cabitest.c")
 target_link_libraries(cabitest ${PROJECT_NAME})
-add_test (NAME CABI_TEST COMMAND cabitest /home/erny/Desktop/ul.cfg)
+add_test(NAME CABI_TEST COMMAND cabitest /home/erny/Desktop/ul.cfg)
 
 install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
