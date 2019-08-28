@@ -15,7 +15,9 @@ file(GLOB EXAMPLE_SOURCES "examples/*.d")
 include_directories(include)
 
 set(CMAKE_D_FLAGS "${CMAKE_D_FLAGS} -betterC -O -release -L-rpath=.")
-set_property(SOURCE ${PUB_SOURCES} PROPERTY COMPILE_FLAGS "-Hd=${CMAKE_SOURCE_DIR}/include")
+add_library(generate_header SHARED ${PUB_SOURCES})
+target_compile_options (generate_header PRIVATE "-Hd=${CMAKE_SOURCE_DIR}/include")
+
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 add_executable(open-usbextreme-example ${EXAMPLE_SOURCES})
