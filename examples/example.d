@@ -3,8 +3,8 @@ import core.stdc.stdlib;
 import usbextreme;
 
 extern(C) int main(int argc, char[]* argv) {
-    usb_extreme_headers headers;
-    usb_extreme_filestat[10] filestatsBuf = void;
+    UsbExtremeHeaders headers;
+    UsbExtremeFilestat[10] filestatsBuf = void;
 
     if (argc < 2) {
         printf("Usage: open-usbextreme-example <path/to/ul.cfg>\n");

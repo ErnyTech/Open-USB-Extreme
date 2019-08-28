@@ -5,8 +5,8 @@ enum USBEXTREME_NAME_LENGTH = 32;
 enum USBEXTREME_ID_LENGTH = 15;
 enum USBEXTREME_NAME_EXT_LENGTH = 10;
 enum USBEXTREME_MAGIC = 8;
-enum USBEXTREME_HEADER_SIZE = usb_extreme_base.sizeof;
-align (1) struct usb_extreme_base
+enum USBEXTREME_HEADER_SIZE = UsbExtremeBase.sizeof;
+align (1) struct UsbExtremeBase
 {
 	align (1) 
 	{
@@ -15,7 +15,7 @@ align (1) struct usb_extreme_base
 		uint8_t[10] empty2;
 	}
 }
-align (1) struct usb_extreme_v0
+align (1) struct UsbExtremeV0
 {
 	align (1) 
 	{
@@ -28,7 +28,7 @@ align (1) struct usb_extreme_v0
 		uint8_t[USBEXTREME_NAME_EXT_LENGTH] empty2;
 	}
 }
-align (1) struct usb_extreme_v1
+align (1) struct UsbExtremeV1
 {
 	align (1) 
 	{
@@ -37,28 +37,28 @@ align (1) struct usb_extreme_v1
 		uint8_t n_parts;
 		uint8_t type;
 		uint16_t size;
-		uint8_t video_mode;
-		uint8_t usb_extreme_version;
+		uint8_t videoMode;
+		uint8_t usbExtremeVersion;
 		uint8_t magic;
-		char[USBEXTREME_NAME_EXT_LENGTH] name_ext;
+		char[USBEXTREME_NAME_EXT_LENGTH] nameExt;
 	}
 }
-struct usb_extreme_headers
+struct UsbExtremeHeaders
 {
-	const(void)* first_header;
-	const(usb_extreme_base)[] headers;
-	int num_headers;
-	size_t headerslen;
+	const(void)* firstHeader;
+	const(UsbExtremeBase)[] headers;
+	int numHeaders;
+	size_t headersLen;
 	UsbExtremeVersion oueVersion;
 }
-struct usb_extreme_filestat
+struct UsbExtremeFilestat
 {
 	int offset;
 	char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
 	SCECdvdMediaType type;
 	uint16_t size;
-	uint8_t video_mode;
-	UsbExtremeVersion usb_extreme_version;
+	uint8_t videoMode;
+	UsbExtremeVersion usbExtremeVersion;
 }
 enum UsbExtremeVersion 
 {
@@ -87,10 +87,10 @@ enum SCECdvdMediaType
 extern (D) bool isOue(const(void)[] headers);
 extern (D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion);
 extern (D) int oueNumHeaders(const(void)[] headers);
-extern (D) int ouePointHeaders(ref const(usb_extreme_base)[] headers, const(void)[] raw_headers);
+extern (D) int ouePointHeaders(ref const(UsbExtremeBase)[] headers, const(void)[] rawHeaders);
 extern (D) UsbExtremeVersion oueHeadersVersion(const(void)[] headers);
-extern (D) int oueReadHeaders(ref usb_extreme_headers headers, const(void)[] raw_headers);
-extern (D) usb_extreme_filestat[] oueRead(usb_extreme_filestat[] filestats, const(usb_extreme_headers) headers);
+extern (D) int oueReadHeaders(ref UsbExtremeHeaders headers, const(void)[] rawHeaders);
+extern (D) UsbExtremeFilestat[] oueRead(UsbExtremeFilestat[] filestats, const(UsbExtremeHeaders) headers);
 private R[] castArray(R, T)(T[] array)
 {
 	auto ptr = array.ptr;
