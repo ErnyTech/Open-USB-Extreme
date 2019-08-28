@@ -71,7 +71,7 @@ typedef struct __attribute__((__packed__)) {
 } usb_extreme_v1;
 
 typedef struct {
-    int offset;
+    size_t offset;
     char name[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH];
     SCECdvdMediaType type;
     u16 size;
@@ -82,7 +82,7 @@ typedef struct {
 typedef struct {
     void *first_header;
     usb_extreme_base *headers;
-    int num_headers;
+    size_t num_headers;
     size_t headerslen;
     usb_extreme_versions version;
 } usb_extreme_headers;
@@ -92,13 +92,13 @@ typedef struct {
 /* Global headers functions */
 int is_oue(const void *headers, const size_t headerslen);
 usb_extreme_versions get_version(u8 version);
-int oue_point_headers(usb_extreme_base **headers, void *raw_headers, size_t headerslen);
-int oue_num_headers(int *num_headers, const void *headers, size_t headerslen);
+size_t oue_point_headers(usb_extreme_base **headers, void *raw_headers, size_t headerslen);
+size_t oue_num_headers(size_t *num_headers, const void *headers, size_t headerslen);
 int oue_version(usb_extreme_versions *version, const void *headers, size_t headerslen);
 int oue_read_headers(usb_extreme_headers *headers, void *raw_headers, const size_t headerslen);
 
 /* Read functions */
-int oue_read(usb_extreme_filestat *filestats, const usb_extreme_headers headers, const int filestats_nlen);
+size_t oue_read(usb_extreme_filestat *filestats, const usb_extreme_headers headers, const int filestats_nlen);
 
 /* implementation in development
  *

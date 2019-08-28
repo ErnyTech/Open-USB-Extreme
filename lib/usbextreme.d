@@ -19,7 +19,7 @@ align(1) struct UsbExtremeV0 {
     char[USBEXTREME_NAME_LENGTH] name;
     char[USBEXTREME_ID_LENGTH] id;
     uint8_t n_parts;
-    uint8_t type;
+    SCECdvdMediaType type;
     uint8_t[4] empty;
     uint8_t magic;
     uint8_t[USBEXTREME_NAME_EXT_LENGTH] empty2;
@@ -30,10 +30,10 @@ align(1) struct UsbExtremeV1 {
     char[USBEXTREME_NAME_LENGTH] name;
     char[USBEXTREME_ID_LENGTH] id;
     uint8_t n_parts;
-    uint8_t type;
+    SCECdvdMediaType type;
     uint16_t size;
     uint8_t videoMode;
-    uint8_t usbExtremeVersion;
+    UsbExtremeVersion usbExtremeVersion;
     uint8_t magic;
     char[USBEXTREME_NAME_EXT_LENGTH] nameExt;
 }
@@ -41,13 +41,13 @@ align(1) struct UsbExtremeV1 {
 struct UsbExtremeHeaders {
     const(void)* firstHeader;
     const(UsbExtremeBase)[] headers;
-    int numHeaders;
+    size_t numHeaders;
     size_t headersLen;
     UsbExtremeVersion oueVersion;
 }
 
 struct UsbExtremeFilestat {
-    int offset;
+    size_t offset;
     char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
     SCECdvdMediaType type;
     uint16_t size;
@@ -55,14 +55,13 @@ struct UsbExtremeFilestat {
     UsbExtremeVersion usbExtremeVersion;
 }
 
-enum UsbExtremeVersion {
+enum UsbExtremeVersion : uint8_t {
     V0 = 0x00,
     V1,
     Unknown
 }
 
-enum SCECdvdMediaType {
-    SCECdGDTFUNCFAIL	= -1,
+enum SCECdvdMediaType : uint8_t {
     SCECdNODISC		= 0x00,
     SCECdDETCT,
     SCECdDETCTCD,
@@ -93,24 +92,24 @@ extern(D) bool isOue(const(void)[] headers) {
     return true;
 }
 
-extern(D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion) {
+extern(D) UsbExtremeVersion getVersion(UsbExtremeVersion usbExtremeVersion) {
     switch (usbExtremeVersion) {
-        case 0: {
+        case UsbExtremeVersion.V0: {
             return UsbExtremeVersion.V0;
         }
 
-        case 1: {
+        case UsbExtremeVersion.V1: {
             return UsbExtremeVersion.V1;
         }
 
         default: {
-            return UsbExtremeVersion.V1;
+            return UsbExtremeVersion.V0;
         }
     }
 }
 
-extern(D) int oueNumHeaders(const(void)[] headers) {
-    auto headersLen = cast(int) (castArray!(UsbExtremeBase)(headers).length);
+extern(D) size_t oueNumHeaders(const(void)[] headers) {
+    auto headersLen = castArray!(UsbExtremeBase)(headers).length;
 
     if (!isOue(headers)) {
         return -1;
@@ -119,7 +118,7 @@ extern(D) int oueNumHeaders(const(void)[] headers) {
     return headersLen;
 }
 
-extern(D) int ouePointHeaders(ref const(UsbExtremeBase)[] headers, const(void)[] rawHeaders) {
+extern(D) size_t ouePointHeaders(ref const(UsbExtremeBase)[] headers, const(void)[] rawHeaders) {
     auto headersLen = oueNumHeaders(rawHeaders);
 
     if (headersLen <= 0) {
@@ -195,8 +194,8 @@ extern(D) UsbExtremeFilestat[] oueRead(UsbExtremeFilestat[] filestats, const(Usb
         }
         
         filestat.size = size;
-        filestat.type = cast(SCECdvdMediaType) header.type;
-        filestat.offset = cast(int) i;
+        filestat.type = header.type;
+        filestat.offset = i;
         filestat.videoMode = videoMode;
         filestat.usbExtremeVersion = headerVersion;
         headersLength -= 1;

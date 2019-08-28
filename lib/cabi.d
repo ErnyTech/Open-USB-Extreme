@@ -7,16 +7,16 @@ extern(C) int is_oue(const(void)* headers, size_t headersLen) {
 }
 
 extern(C) UsbExtremeVersion get_version(uint8_t usbExtremeVersion) {
-    return getVersion(usbExtremeVersion);
+    return getVersion(cast(UsbExtremeVersion) usbExtremeVersion);
 }
 
-extern(C) int oue_num_headers(int *numHeaders, const(void) *headers, size_t headersLen) {
+extern(C) size_t oue_num_headers(size_t *numHeaders, const(void) *headers, size_t headersLen) {
     auto result = oueNumHeaders(headers[0..headersLen]);
     *numHeaders = result;
     return result;
 }
 
-extern(C) int oue_point_headers(const(UsbExtremeBase)** headers, const(void)* rawHeaders, size_t headersLen) {
+extern(C) size_t oue_point_headers(const(UsbExtremeBase)** headers, const(void)* rawHeaders, size_t headersLen) {
     auto len = headersLen / UsbExtremeBase.sizeof;
     const(UsbExtremeBase)[] headersArr = (*headers)[0..len];
     return ouePointHeaders(headersArr, rawHeaders[0..headersLen]);
@@ -37,7 +37,7 @@ extern(C) int oue_read_headers(UsbExtremeHeaders* headers, const(void)* rawHeade
     return oueReadHeaders(*headers, rawHeaders[0..headersLen]);
 }
 
-extern(C) int oue_read(UsbExtremeFilestat* filestat, const(UsbExtremeHeaders) headers, int filestatsLen) {
+extern(C) size_t oue_read(UsbExtremeFilestat* filestat, const(UsbExtremeHeaders) headers, int filestatsLen) {
     auto result = oueRead(filestat[0..filestatsLen], headers);
-    return cast(int) result.length;
+    return result.length;
 }

@@ -22,7 +22,7 @@ align (1) struct UsbExtremeV0
 		char[USBEXTREME_NAME_LENGTH] name;
 		char[USBEXTREME_ID_LENGTH] id;
 		uint8_t n_parts;
-		uint8_t type;
+		SCECdvdMediaType type;
 		uint8_t[4] empty;
 		uint8_t magic;
 		uint8_t[USBEXTREME_NAME_EXT_LENGTH] empty2;
@@ -35,10 +35,10 @@ align (1) struct UsbExtremeV1
 		char[USBEXTREME_NAME_LENGTH] name;
 		char[USBEXTREME_ID_LENGTH] id;
 		uint8_t n_parts;
-		uint8_t type;
+		SCECdvdMediaType type;
 		uint16_t size;
 		uint8_t videoMode;
-		uint8_t usbExtremeVersion;
+		UsbExtremeVersion usbExtremeVersion;
 		uint8_t magic;
 		char[USBEXTREME_NAME_EXT_LENGTH] nameExt;
 	}
@@ -47,28 +47,27 @@ struct UsbExtremeHeaders
 {
 	const(void)* firstHeader;
 	const(UsbExtremeBase)[] headers;
-	int numHeaders;
+	size_t numHeaders;
 	size_t headersLen;
 	UsbExtremeVersion oueVersion;
 }
 struct UsbExtremeFilestat
 {
-	int offset;
+	size_t offset;
 	char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
 	SCECdvdMediaType type;
 	uint16_t size;
 	uint8_t videoMode;
 	UsbExtremeVersion usbExtremeVersion;
 }
-enum UsbExtremeVersion 
+enum UsbExtremeVersion : uint8_t
 {
 	V0 = 0,
 	V1,
 	Unknown,
 }
-enum SCECdvdMediaType 
+enum SCECdvdMediaType : uint8_t
 {
-	SCECdGDTFUNCFAIL = -1,
 	SCECdNODISC = 0,
 	SCECdDETCT,
 	SCECdDETCTCD,
@@ -85,9 +84,9 @@ enum SCECdvdMediaType
 	SCECdIllegalMediaoffset,
 }
 extern (D) bool isOue(const(void)[] headers);
-extern (D) UsbExtremeVersion getVersion(uint8_t usbExtremeVersion);
-extern (D) int oueNumHeaders(const(void)[] headers);
-extern (D) int ouePointHeaders(ref const(UsbExtremeBase)[] headers, const(void)[] rawHeaders);
+extern (D) UsbExtremeVersion getVersion(UsbExtremeVersion usbExtremeVersion);
+extern (D) size_t oueNumHeaders(const(void)[] headers);
+extern (D) size_t ouePointHeaders(ref const(UsbExtremeBase)[] headers, const(void)[] rawHeaders);
 extern (D) UsbExtremeVersion oueHeadersVersion(const(void)[] headers);
 extern (D) int oueReadHeaders(ref UsbExtremeHeaders headers, const(void)[] rawHeaders);
 extern (D) UsbExtremeFilestat[] oueRead(UsbExtremeFilestat[] filestats, const(UsbExtremeHeaders) headers);
