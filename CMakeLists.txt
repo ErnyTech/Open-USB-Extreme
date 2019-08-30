@@ -16,7 +16,7 @@ include_directories(include)
 
 set(CMAKE_D_FLAGS "${CMAKE_D_FLAGS} -betterC -O -release -L-rpath=.")
 add_library(generate_header SHARED ${PUB_SOURCES})
-target_compile_options (generate_header PRIVATE "-Hd=${CMAKE_SOURCE_DIR}/include")
+target_compile_options(generate_header PRIVATE "-Hd=${CMAKE_SOURCE_DIR}/include")
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 

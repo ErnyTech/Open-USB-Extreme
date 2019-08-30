@@ -15,6 +15,12 @@
 #define USBEXTREME_ID_LENGTH 15
 #define USBEXTREME_NAME_EXT_LENGTH 10
 #define USBEXTREME_MAGIC 0x08
+#define USBEXTREME_FILESTAT_NAME_LENGTH USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH
+#define USBEXTREME_PREFIX "ul."
+#define USBEXTREME_CRC32_LENGTH 8
+#define USBEXTREME_FILENAME_LENGTH USBEXTREME_ID_LENGTH + USBEXTREME_CRC32_LENGTH + 1
+#define USBEXTREME_PART_SIZE = 0x40000000
+
 
 typedef enum {
     SCECdGDTFUNCFAIL	= -1,
@@ -72,11 +78,13 @@ typedef struct __attribute__((__packed__)) {
 
 typedef struct {
     size_t offset;
-    char name[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH];
+    char name[USBEXTREME_FILESTAT_NAME_LENGTH];
     SCECdvdMediaType type;
-    u16 size;
+    size_t size;
     u8 video_mode;
     usb_extreme_versions usb_extreme_version;
+    char filename[USBEXTREME_FILENAME_LENGTH];
+    u8 parts;
 } usb_extreme_filestat;
 
 typedef struct {
@@ -99,6 +107,12 @@ int oue_read_headers(usb_extreme_headers *headers, void *raw_headers, const size
 
 /* Read functions */
 size_t oue_read(usb_extreme_filestat *filestats, const usb_extreme_headers headers, const int filestats_nlen);
+
+void oue_get_name(char *dest, size_t length, const usb_extreme_headers headers, size_t offset);
+
+void oue_filename(char *buffer, size_t length, const usb_extreme_headers headers, size_t offset);
+
+size_t oue_part_size(const usb_extreme_headers headers, size_t offset);
 
 /* implementation in development
  *

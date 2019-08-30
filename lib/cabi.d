@@ -41,3 +41,15 @@ extern(C) size_t oue_read(UsbExtremeFilestat* filestat, const(UsbExtremeHeaders)
     auto result = oueRead(filestat[0..filestatsLen], headers);
     return result.length;
 }
+
+extern(C) void oue_get_name(char* dest, size_t length, const(UsbExtremeHeaders) headers, size_t offset) {
+    oueGetName(dest[0..length], headers, offset);
+}
+
+extern(C) void oue_filename(char* buffer, size_t length, const(UsbExtremeHeaders) headers, size_t offset) {
+    oueFilename(buffer[0..length], headers, offset);
+}
+
+extern(C) size_t oue_part_size(const(UsbExtremeHeaders) headers, size_t offset) {
+    return ouePartSize(headers, offset);
+}

@@ -6,6 +6,11 @@ enum USBEXTREME_ID_LENGTH = 15;
 enum USBEXTREME_NAME_EXT_LENGTH = 10;
 enum USBEXTREME_MAGIC = 0x08;
 enum USBEXTREME_HEADER_SIZE = UsbExtremeBase.sizeof;
+enum USBEXTREME_FILESTAT_NAME_LENGTH = USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH;
+enum USBEXTREME_PREFIX = "ul.";
+enum USBEXTREME_CRC32_LENGTH = 8;
+enum USBEXTREME_FILENAME_LENGTH = USBEXTREME_ID_LENGTH + USBEXTREME_CRC32_LENGTH + 1;
+enum USBEXTREME_PART_SIZE_V0 = 0x40000000;
 
 align(1) struct UsbExtremeBase {
     align(1):
@@ -18,7 +23,7 @@ align(1) struct UsbExtremeV0 {
     align(1):
     char[USBEXTREME_NAME_LENGTH] name;
     char[USBEXTREME_ID_LENGTH] id;
-    uint8_t n_parts;
+    uint8_t parts;
     SCECdvdMediaType type;
     uint8_t[4] empty;
     uint8_t magic;
@@ -29,9 +34,9 @@ align(1) struct UsbExtremeV1 {
     align(1):
     char[USBEXTREME_NAME_LENGTH] name;
     char[USBEXTREME_ID_LENGTH] id;
-    uint8_t n_parts;
+    uint8_t parts;
     SCECdvdMediaType type;
-    uint16_t size;
+    uint16_t partSize;
     uint8_t videoMode;
     UsbExtremeVersion usbExtremeVersion;
     uint8_t magic;
@@ -48,9 +53,9 @@ struct UsbExtremeHeaders {
 
 struct UsbExtremeFilestat {
     size_t offset;
-    char[USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] name;
+    char[USBEXTREME_FILESTAT_NAME_LENGTH] name;
     SCECdvdMediaType type;
-    uint16_t size;
+    size_t partSize;
     uint8_t videoMode;
     UsbExtremeVersion usbExtremeVersion;
 }
@@ -182,18 +187,16 @@ extern(D) UsbExtremeFilestat[] oueRead(UsbExtremeFilestat[] filestats, const(Usb
         }
         
         auto header = headersFull[i];
-        filestat.name[0..USBEXTREME_NAME_LENGTH] = header.name[0..$];
+        oueGetName(filestat.name, headers, i);
         auto headerVersion = getVersion(header.usbExtremeVersion);
-        uint16_t size = 0;
+        auto partSize = ouePartSize(headers, i);
         uint8_t videoMode = 0;
         
         if (headerVersion >= 1) {
-            size = header.size;
             videoMode = header.videoMode;
-            filestat.name[USBEXTREME_NAME_LENGTH..USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] = header.nameExt[0..$];
-        }
-        
-        filestat.size = size;
+        } 
+
+        filestat.partSize = partSize;
         filestat.type = header.type;
         filestat.offset = i;
         filestat.videoMode = videoMode;
@@ -205,8 +208,75 @@ extern(D) UsbExtremeFilestat[] oueRead(UsbExtremeFilestat[] filestats, const(Usb
     return filestats[0..fileStatsLength];
 }
 
+extern(D) void oueGetName(char[] dest, const(UsbExtremeHeaders) headers, size_t offset) {
+    auto headersFull = castArray!(UsbExtremeV1)(headers.headers);
+    auto header = headersFull[offset];
+    auto headerVersion = getVersion(header.usbExtremeVersion);
+
+    dest[0..USBEXTREME_NAME_LENGTH] = header.name[0..$];
+
+    if (headerVersion >= 1) {
+        dest[USBEXTREME_NAME_LENGTH..USBEXTREME_NAME_LENGTH + USBEXTREME_NAME_EXT_LENGTH] = header.nameExt[0..$];
+    }
+}
+
+extern(D) char[] oueFilename(char[] buffer, const(UsbExtremeHeaders) headers, size_t offset) {
+    import core.stdc.stdio : snprintf;
+
+    char[USBEXTREME_FILESTAT_NAME_LENGTH] name;
+    auto headersFull = castArray!(UsbExtremeV1)(headers.headers);
+    auto header = headersFull[offset];
+    auto startupId = header.id[3..$];
+
+    oueGetName(name, headers, offset);
+
+    auto crc = crc32(name);
+
+    snprintf(buffer.ptr, buffer.length, "%s%08X.%s", USBEXTREME_PREFIX.ptr, crc, startupId.ptr);
+    return buffer;
+}
+
+extern(D) size_t ouePartSize(const(UsbExtremeHeaders) headers, size_t offset) {
+    auto headersFull = castArray!(UsbExtremeV1)(headers.headers);
+    auto header = headersFull[offset];
+    auto headerVersion = getVersion(header.usbExtremeVersion);
+
+    if (headerVersion >= 1) {
+        return header.partSize * (2 ^^ 20);
+    } else {
+        return USBEXTREME_PART_SIZE_V0;
+    }
+}
+
 private R[] castArray(R, T) (T[] array) { // Workaround for https://issues.dlang.org/show_bug.cgi?id=20088
     auto ptr = array.ptr;
     auto castPtr = cast(R*) ptr;
     return castPtr[0..((array.length * T.sizeof) / R.sizeof)];
+}
+
+__gshared uint[1024] crcTable;
+private uint crc32(char[] name) {
+    int crc;
+    int count;
+
+    foreach (table; 0 .. 256) {
+        crc = table << 24;
+
+        for (count = 8; count > 0; count--) {
+            if (crc < 0) {
+                crc = crc << 1;
+            } else {
+                crc = (crc << 1) ^ 0x04C11DB7;
+            }
+        }
+
+         crcTable[255 - table] = crc;
+    }
+
+    do {
+        auto singleChar = name[count++];
+        crc = crcTable[singleChar ^ ((crc >> 24) & 0xFF)] ^ ((crc << 8) & 0xFFFFFF00);
+    } while (name[count - 1] != 0);
+
+    return crc;
 }
